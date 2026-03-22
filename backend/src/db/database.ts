@@ -14,6 +14,7 @@ const DB_PATH = path.resolve(__dirname, "..", "..", "database.sqlite");
 
 export interface Database {
   run: (sql: string, params?: any[]) => Promise<sqlite3.RunResult>;
+  exec: (sql: string) => Promise<void>;
   get: (sql: string, params?: any[]) => Promise<any>;
   all: (sql: string, params?: any[]) => Promise<any[]>;
   close: () => Promise<void>;
@@ -22,6 +23,7 @@ export interface Database {
 export class DatabaseConnection {
   private db: sqlite3.Database;
   public run: (sql: string, params?: any[]) => Promise<sqlite3.RunResult>;
+  public exec: (sql: string) => Promise<void>;
   public get: (sql: string, params?: any[]) => Promise<any>;
   public all: (sql: string, params?: any[]) => Promise<any[]>;
   public close: () => Promise<void>;
@@ -37,6 +39,18 @@ export class DatabaseConnection {
             reject(err);
           } else {
             resolve(this); // 'this' contains lastID, changes, etc.
+          }
+        });
+      });
+    };
+
+    this.exec = (sql: string) => {
+      return new Promise<void>((resolve, reject) => {
+        this.db.exec(sql, function (err) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
           }
         });
       });
@@ -88,7 +102,7 @@ export async function runMigrations(): Promise<void> {
       if (process.env.NODE_ENV !== "test") {
         console.log(`Running migration: ${file}`);
       }
-      await db.run(sql);
+      await db.exec(sql);
     }
 
     if (process.env.NODE_ENV !== "test") {

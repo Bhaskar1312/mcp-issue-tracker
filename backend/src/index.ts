@@ -297,8 +297,12 @@ export async function buildApp(
   return fastify;
 }
 
+import { fileURLToPath } from "url";
+import path from "path";
+
 // Start the server if this file is run directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] && process.argv[1] === __filename) {
   try {
     const app = await buildApp();
     await app.listen({ port: 3000, host: "0.0.0.0" });
@@ -307,3 +311,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     process.exit(1);
   }
 }
+
